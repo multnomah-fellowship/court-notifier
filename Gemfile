@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'activerecord'
-gem 'pg'
+gem 'clockwork'
 gem 'mechanize'
+gem 'pg'
 gem 'sinatra'
