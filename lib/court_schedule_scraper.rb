@@ -45,7 +45,7 @@ class CourtScheduleScraper
                     SearchMode: 'DATERANGE',
                     StatusType: 'true',
                     AllStatusTypes: 'true',
-                    CaseCategories: 'CR,CV,FAM,PR',
+                    CaseCategories: 'CR', # CR = Criminal cases only
                     SearchParams: 'SearchBy~~Search By:~~Date Range~~Date Range||DateSettingOnAfter~~Date On or After:~~5/17/2017~~5/17/2017||DateSettingOnBefore~~Date On or Before:~~5/17/2017~~5/17/2017||selectSortBy~~Sort By:~~Filed Date~~Filed Date||CaseCategories~~Case Categories:~~CR,CV,FAM,PR~~Criminal, Civil, Family, Probate and Mental Health',
                   )
 
