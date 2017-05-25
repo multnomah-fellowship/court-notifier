@@ -21,9 +21,10 @@ class ScheduleUpdater
           schedule = Schedule.where(
             case_number: item[:case_number],
             hearing_type: item[:hearing_type],
-            datetime: datetime
+            style: item[:style],
           ).first_or_initialize
 
+          schedule.datetime = datetime
           schedule.schedule_type = item[:type]
           schedule.style = item[:style]
           schedule.judicial_officer = item[:judicial_officer]
@@ -31,19 +32,25 @@ class ScheduleUpdater
 
           if schedule.persisted?
             if schedule.changed?
-              $stderr.puts "Schedule changed: #{schedule.case_number} #{schedule.changes}"
+              # TODO: send a message here instead
+              $stderr.puts "Schedule updated: #{schedule.case_number}"
+              schedule.changes.each do |field, (before, after)|
+                $stderr.puts "  change #{field}: #{before} -> #{after}"
+              end
+
               schedule.save
             end
 
             beginning_schedules.delete(schedule.id)
           else
             schedule.save
-            $stderr.puts "Schedule created: #{schedule.attributes}"
+            $stderr.puts "Schedule created: #{schedule.case_number}"
+            $stderr.puts "  fields: #{schedule.attributes}"
           end
         end
 
         beginning_schedules.each do |id|
-          $stderr.puts("Schedule destroyed: #{Schedule.find(id)}")
+          $stderr.puts("Schedule destroyed: #{Schedule.find(id).case_number}")
         end
 
         Schedule.where(id: beginning_schedules).destroy_all
