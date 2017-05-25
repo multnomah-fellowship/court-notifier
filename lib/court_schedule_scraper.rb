@@ -54,6 +54,11 @@ class CourtScheduleScraper
       return
     end
 
+    if error = error_message(page)
+      $stderr.puts "Error: #{error}"
+      return
+    end
+
     schedule_table(page).css('> tr').each do |row|
       next if row.text =~ /Case Number/ # skip header row
 
@@ -68,6 +73,11 @@ class CourtScheduleScraper
         hearing_type: row.css('td:nth-child(4) tr:nth-child(3) td').text
       )
     end
+  end
+
+  def error_message(page)
+    node = page.css('[style*="color:#FF4040"]').first
+    node && node.text
   end
 
   def schedule_table(page)
