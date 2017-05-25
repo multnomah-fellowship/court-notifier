@@ -10,43 +10,49 @@ class CourtScheduleScraper
     page = mech.post('https://publicaccess.courts.oregon.gov/PublicAccess/Search.aspx?ID=900',
                      NodeID: '104100,104210,104215,104220,104225,104310,104320,104330,104410,104420,104430,104440',
                      NodeDesc: 'Multnomah')
+
     # GNARLY
     page = mech.post('https://publicaccess.courts.oregon.gov/PublicAccess/Search.aspx?ID=900',
-                     :__EVENTTARGET => '',
-                     :__EVENTARGUMENT => '',
-                     NodeID: '104100,104210,104215,104220,104225,104310,104320,104330,104410,104420,104430,104440',
-                     NodeDesc: 'Multnomah',
-                     SearchBy: '5',
-                     CaseSearchMode: 'CaseNumber',
-                     PartySearchMode: 'Name',
-                     AttorneySearchMode: 'Name',
-                     cboState: 'AA',
-                     CaseStatusType: '0',
-                     cboJudOffc: '19549',
-                     chkCriminal: 'on',
-                     chkFamily: 'on',
-                     chkCivil: 'on',
-                     chkProbate: 'on',
-                     chkDtRangeCriminal: 'on',
-                     chkDtRangeFamily: 'on',
-                     chkDtRangeCivil: 'on',
-                     chkDtRangeProbate: 'on',
-                     cboMagist: '49635',
-                     chkCriminalMagist: 'on',
-                     chkFamilyMagist: 'on',
-                     chkCivilMagist: 'on',
-                     chkProbateMagist: 'on',
-                     DateSettingOnAfter: date.strftime('%-m/%d/%Y'),
-                     DateSettingOnBefore: date.strftime('%-m/%d/%Y'),
-                     SortBy: 'fileddate',
-                     SearchSubmit: 'Search',
-                     SearchType: 'DATERANGE',
-                     SearchMode: 'DATERANGE',
-                     StatusType: 'true',
-                     AllStatusTypes: 'true',
-                     CaseCategories: 'CR,CV,FAM,PR',
-                     SearchParams: 'SearchBy~~Search By:~~Date Range~~Date Range||DateSettingOnAfter~~Date On or After:~~5/17/2017~~5/17/2017||DateSettingOnBefore~~Date On or Before:~~5/17/2017~~5/17/2017||selectSortBy~~Sort By:~~Filed Date~~Filed Date||CaseCategories~~Case Categories:~~CR,CV,FAM,PR~~Criminal, Civil, Family, Probate and Mental Health',
-                    )
+                    :__EVENTTARGET => '',
+                    :__EVENTARGUMENT => '',
+                    NodeID: '104100,104210,104215,104220,104225,104310,104320,104330,104410,104420,104430,104440',
+                    NodeDesc: 'Multnomah',
+                    SearchBy: '5',
+                    CaseSearchMode: 'CaseNumber',
+                    PartySearchMode: 'Name',
+                    AttorneySearchMode: 'Name',
+                    cboState: 'AA',
+                    CaseStatusType: '0',
+                    cboJudOffc: '19549',
+                    chkCriminal: 'on',
+                    chkFamily: 'on',
+                    chkCivil: 'on',
+                    chkProbate: 'on',
+                    chkDtRangeCriminal: 'on',
+                    chkDtRangeFamily: 'on',
+                    chkDtRangeCivil: 'on',
+                    chkDtRangeProbate: 'on',
+                    cboMagist: '49635',
+                    chkCriminalMagist: 'on',
+                    chkFamilyMagist: 'on',
+                    chkCivilMagist: 'on',
+                    chkProbateMagist: 'on',
+                    DateSettingOnAfter: date.strftime('%-m/%d/%Y'),
+                    DateSettingOnBefore: date.strftime('%-m/%d/%Y'),
+                    SortBy: 'fileddate',
+                    SearchSubmit: 'Search',
+                    SearchType: 'DATERANGE',
+                    SearchMode: 'DATERANGE',
+                    StatusType: 'true',
+                    AllStatusTypes: 'true',
+                    CaseCategories: 'CR,CV,FAM,PR',
+                    SearchParams: 'SearchBy~~Search By:~~Date Range~~Date Range||DateSettingOnAfter~~Date On or After:~~5/17/2017~~5/17/2017||DateSettingOnBefore~~Date On or Before:~~5/17/2017~~5/17/2017||selectSortBy~~Sort By:~~Filed Date~~Filed Date||CaseCategories~~Case Categories:~~CR,CV,FAM,PR~~Criminal, Civil, Family, Probate and Mental Health',
+                  )
+
+    # if there are no cases scheduled, return nothing (probably a weekend)
+    if page.css('body').text =~ /No cases matched/
+      return
+    end
 
     schedule_table(page).css('> tr').each do |row|
       next if row.text =~ /Case Number/ # skip header row
@@ -66,12 +72,7 @@ class CourtScheduleScraper
 
   def schedule_table(page)
     node = page.css('tr[bgcolor="#EEEEEE"]').first
-    (node = node.parent) until node.name == 'table'
+    (node = node.parent) until name == 'table'
     node
   end
 end
-
-date = ARGV[0] || Date.today
-schedule = CourtScheduleScraper.new.cases_for(date).to_a
-schedule.sort_by! { |c| c[:case_number] }
-puts JSON.pretty_generate(schedule)
