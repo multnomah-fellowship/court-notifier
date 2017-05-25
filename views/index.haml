@@ -1,0 +1,23 @@
+<form method="POST" action="/update"><input type="submit" value="Update Now!" /></form>
+
+%h2 Subscriptions
+%ul
+  - subscriptions.each do |subscription|
+    %li
+      %b= subscription.phone_number
+      is subscribed to
+      %b= subscription.case_number
+      = surround '(', ')' do
+        %a{ href: "/subscriptions/#{subscription.id}/delete" } Unsubscribe
+
+%form{ method: 'POST', action: '/subscriptions' }
+  %div
+    %label{ for: 'phone_number' } Phone Number
+    %input{ name: 'phone_number', type: 'text', placeholder: '+14155555555' }
+
+  %div
+    %label{ for: 'case_number' } Case Number
+    %input{ name: 'case_number', type: 'text', placeholder: '14CR134124' }
+
+  %div
+    %input{ type: 'submit', value: 'Subscribe' }

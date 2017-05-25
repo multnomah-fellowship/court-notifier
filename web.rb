@@ -1,6 +1,8 @@
 require_relative './environment.rb'
 
+require 'haml'
 require 'sinatra'
+require 'sinatra/reloader' if development?
 
 ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
 
@@ -9,7 +11,8 @@ after do
 end
 
 get '/' do
-  '<form method="POST" action="/update"><input type="submit" value="Update Now!" /></form>'
+  subscriptions = Subscription.all
+  haml :index, locals: { subscriptions: subscriptions }
 end
 
 post '/update' do
@@ -17,6 +20,21 @@ post '/update' do
   today = tz.utc_to_local(Time.now.utc).to_date
 
   ScheduleUpdater.new(today).update
+
+  redirect '/'
+end
+
+post '/subscriptions' do
+  Subscription.create(
+    phone_number: params[:phone_number],
+    case_number: params[:case_number]
+  )
+
+  redirect '/'
+end
+
+get '/subscriptions/:id/delete' do
+  Subscription.find(params[:id]).destroy
 
   redirect '/'
 end

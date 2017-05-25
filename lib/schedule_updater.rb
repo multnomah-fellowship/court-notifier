@@ -1,7 +1,9 @@
 class ScheduleUpdater
   def initialize(date)
     @date = date
+    @client = TwilioClient.new
   end
+
 
   def update
     (@date..(@date + 7)).each do |date|
@@ -18,10 +20,12 @@ class ScheduleUpdater
             raise ArgumentError.new("Invalid DateTime: #{item[:date]} #{item[:time]}")
           end
 
-          schedule = Schedule.where(
+          # TODO: sometimes two hearings are scheduled with all fields equal
+          # except the datetime. What is the right thing to do with that?
+
+          schedule = Schedule.on_date(date).where(
             case_number: item[:case_number],
             hearing_type: item[:hearing_type],
-            style: item[:style],
           ).first_or_initialize
 
           schedule.datetime = datetime
@@ -32,29 +36,56 @@ class ScheduleUpdater
 
           if schedule.persisted?
             if schedule.changed?
-              # TODO: send a message here instead
-              $stderr.puts "Schedule updated: #{schedule.case_number}"
-              schedule.changes.each do |field, (before, after)|
-                $stderr.puts "  change #{field}: #{before} -> #{after}"
-              end
-
+              send_update_messages(schedule)
               schedule.save
             end
 
             beginning_schedules.delete(schedule.id)
           else
             schedule.save
-            $stderr.puts "Schedule created: #{schedule.case_number}"
-            $stderr.puts "  fields: #{schedule.attributes}"
+            send_created_messages(schedule)
           end
         end
 
         beginning_schedules.each do |id|
-          $stderr.puts("Schedule destroyed: #{Schedule.find(id).case_number}")
+          schedule = Schedule.find(id)
+          send_deleted_messages(schedule)
         end
 
         Schedule.where(id: beginning_schedules).destroy_all
       end
+    end
+  end
+
+  private
+
+  def send_update_messages(schedule)
+    $stderr.puts "Schedule updated: #{schedule.case_number}\t\t#{schedule.changes}"
+
+    Subscription
+      .where(case_number: schedule.case_number)
+      .find_each do |subscription|
+      @client.send_updated_message(subscription.phone_number, schedule)
+    end
+  end
+
+  def send_deleted_messages(schedule)
+    $stderr.puts("Schedule destroyed: #{schedule.case_number}")
+
+    Subscription
+      .where(case_number: schedule.case_number)
+      .find_each do |subscription|
+      @client.send_deleted_message(subscription.phone_number, schedule)
+    end
+  end
+
+  def send_created_messages(schedule)
+    $stderr.puts("Schedule created: #{schedule.case_number}")
+
+    Subscription
+      .where(case_number: schedule.case_number)
+      .find_each do |subscription|
+      @client.send_created_message(subscription.phone_number, schedule)
     end
   end
 end
