@@ -82,7 +82,7 @@ class CourtScheduleScraper
 
   def schedule_table(page)
     node = page.css('tr[bgcolor="#EEEEEE"]').first
-    (node = node.parent) until name == 'table'
+    (node = node.parent) until node.name == 'table'
     node
   end
 end
