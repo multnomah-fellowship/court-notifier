@@ -54,6 +54,8 @@ GEM
     tilt (2.0.7)
     tzinfo (1.2.3)
       thread_safe (~> 0.1)
+    tzinfo-data (1.2017.2)
+      tzinfo (>= 1.0.0)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.4)
@@ -69,6 +71,8 @@ DEPENDENCIES
   pg
   rake
   sinatra
+  tzinfo
+  tzinfo-data
 
 BUNDLED WITH
    1.14.6
