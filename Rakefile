@@ -13,7 +13,9 @@ end
 namespace :update do
   desc 'Update seven days of court cases'
   task schedules: :environment do
-    ScheduleUpdater.new(Date.today).update
+    tz = TZInfo::Timezone.get('America/Los_Angeles')
+    today = tz.utc_to_local(Time.now.utc).to_date
+    ScheduleUpdater.new(today).update
   end
 end
 
