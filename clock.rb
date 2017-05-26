@@ -16,11 +16,14 @@ module Clockwork
     case job
     when 'scrape'
       ScheduleUpdater.new(today).update
+    when 'log'
+      $logger.puts "Now: #{Time.now} / Today: #{today}"
     end
   end
 
   # only scrape during business hours
   # 7 AM PDT = 2 PM UTC
   # 5 PM PDT = 12 AM UTC
-  every(1.hours, 'scrape', at: %w[14:00 16:00 18:00 20:00 22:00 00:00 02:00], if: -> { !today.on_weekend? })
+  every(1.hours, 'scrape', at: %w[14:00 16:00 18:00 20:00 22:00 00:00 02:00])
+  every(1.minute, 'log')
 end
