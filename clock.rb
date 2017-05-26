@@ -11,13 +11,13 @@ end
 
 module Clockwork
   handler do |job|
-    $logger.puts "Running #{job}"
+    $logger.info "Running #{job}"
 
     case job
     when 'scrape'
       ScheduleUpdater.new(today).update
     when 'log'
-      $logger.puts "Now: #{Time.now} / Today: #{today}"
+      $logger.info "Now: #{Time.now} / Today: #{today}"
     end
   end
 
