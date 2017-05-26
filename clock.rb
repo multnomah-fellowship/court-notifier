@@ -25,5 +25,5 @@ module Clockwork
   # 7 AM PDT = 2 PM UTC
   # 5 PM PDT = 12 AM UTC
   every(1.hours, 'scrape', at: %w[14:00 16:00 18:00 20:00 22:00 00:00 02:00])
-  every(1.minute, 'log')
+  every(1.minute, 'log', at: %w[18:52 18:53 18:55])
 end
