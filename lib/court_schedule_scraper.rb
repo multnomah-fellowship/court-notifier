@@ -62,14 +62,22 @@ class CourtScheduleScraper
     schedule_table(page).css('> tr').each do |row|
       next if row.text =~ /Case Number/ # skip header row
 
+      date = row.css('td:nth-child(4) tr:nth-child(1) td').text
+      time = row.css('td:nth-child(4) tr:nth-child(2) td').text
+
+      begin
+        datetime = Time.strptime("#{date} #{time}", "%m/%d/%Y %l:%M %p")
+      rescue ArgumentError
+        raise ArgumentError.new("Invalid DateTime: '#{date} #{time}'")
+      end
+
       yield(
         case_number: row.css('td:nth-child(1) tr:nth-child(1) td').text,
         type: row.css('td:nth-child(1) tr:nth-child(2) td').text,
         style: row.css('td:nth-child(2)').text,
+        datetime: datetime,
         judicial_officer: row.css('td:nth-child(3) tr:nth-child(1) td').text,
         physical_location: row.css('td:nth-child(3) tr:nth-child(2) td').text,
-        date: row.css('td:nth-child(4) tr:nth-child(1) td').text,
-        time: row.css('td:nth-child(4) tr:nth-child(2) td').text,
         hearing_type: row.css('td:nth-child(4) tr:nth-child(3) td').text
       )
     end

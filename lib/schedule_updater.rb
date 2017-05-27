@@ -1,4 +1,6 @@
 class ScheduleUpdater
+  DAYS_TO_UPDATE = 7
+
   def initialize(date)
     @date = date
     @client = TwilioClient.new
@@ -6,61 +8,49 @@ class ScheduleUpdater
 
 
   def update
-    (@date..(@date + 7)).each do |date|
-      $stderr.puts "Updating schedules for #{date}..."
+    old_schedules =
+      Schedule.on_or_after(@date).map(&:attributes).map(&:symbolize_keys)
+    new_schedules = []
 
-      Schedule.transaction do
-        beginning_schedules = Schedule.on_date(date).pluck(:id)
+    (@date..(@date + DAYS_TO_UPDATE)).each do |date|
+      $stderr.write "Fetching schedules for #{date}..."
+      cases = CourtScheduleScraper.new.cases_for(date).to_a
+      $stderr.puts " #{cases.length}"
 
-        cases = CourtScheduleScraper.new.cases_for(date)
-        cases.each do |item|
-          begin
-            datetime = DateTime.strptime("#{item[:date]} #{item[:time]}", "%m/%d/%Y %l:%M %p")
-          rescue ArgumentError
-            raise ArgumentError.new("Invalid DateTime: #{item[:date]} #{item[:time]}")
-          end
+      new_schedules.concat(cases)
+    end
 
-          # TODO: sometimes two hearings are scheduled with all fields equal
-          # except the datetime. What is the right thing to do with that?
+    require 'pry'; binding.pry
 
-          schedule = Schedule.on_date(date).where(
-            case_number: item[:case_number],
-            hearing_type: item[:hearing_type],
-          ).first_or_initialize
-
-          schedule.datetime = datetime
-          schedule.schedule_type = item[:type]
-          schedule.style = item[:style]
-          schedule.judicial_officer = item[:judicial_officer]
-          schedule.physical_location = item[:physical_location]
-
-          if schedule.persisted?
-            if schedule.changed?
-              send_update_messages(schedule)
-              schedule.save
-            end
-
-            beginning_schedules.delete(schedule.id)
-          else
-            schedule.save
-            send_created_messages(schedule)
-          end
+    Differ.new(old_schedules, new_schedules).each_change do |change_type, change|
+      case change_type
+      when :created
+        # `change` is the new event's attributes
+        schedule = Schedule.create(change)
+        send_created_messages(schedule)
+      when :removed
+        # `change` is the old event's attributes
+        schedule = Schedule.find(change[:id])
+        send_deleted_messages(schedule)
+        schedule.destroy
+      when :changed
+        # `change` is a 2-tuple of the id and an activemodel-style change hash like:
+        #   `{ key => [before, after] }`
+        id, attribute_changes = change
+        schedule = Schedule.find(id)
+        attribute_changes.each do |key, (_, after)|
+          schedule[key] = after
         end
-
-        beginning_schedules.each do |id|
-          schedule = Schedule.find(id)
-          send_deleted_messages(schedule)
-        end
-
-        Schedule.where(id: beginning_schedules).destroy_all
+        send_update_messages(schedule)
+        schedule.save
       end
     end
   end
 
   private
 
-  def send_update_messages(schedule)
-    $stderr.puts "Schedule updated: #{schedule.case_number}\t\t#{schedule.changes}"
+  def send_update_messages(schedule, changes)
+    $stderr.puts "Schedule updated: #{schedule.case_number}\t\t#{changes}"
 
     Subscription
       .where(case_number: schedule.case_number)
