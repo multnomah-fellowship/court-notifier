@@ -2,6 +2,13 @@ ENV['APP_ENV'] ||= 'development'
 
 require 'active_record'
 require 'date'
+require 'sentry-raven'
+
+if ENV['RAVEN_DSN']
+  Raven.configure do |config|
+    config.dsn = ENV['RAVEN_DSN']
+  end
+end
 
 # helper classes:
 require_relative './lib/court_schedule_scraper.rb'
