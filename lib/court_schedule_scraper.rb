@@ -103,7 +103,7 @@ class CourtScheduleScraper
     time = row.css('td:nth-child(4) tr:nth-child(2) td').text
 
     begin
-      datetime = Time.strptime("#{date} #{time}", "%m/%d/%Y %l:%M %p")
+      datetime = Time.strptime("#{date} #{time} UTC", "%m/%d/%Y %l:%M %p %Z")
     rescue ArgumentError
       raise ArgumentError.new("Invalid DateTime: '#{date} #{time}'")
     end
