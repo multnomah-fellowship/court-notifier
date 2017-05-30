@@ -99,15 +99,23 @@ class CourtScheduleScraper
   end
 
   def row_to_hash(row)
+    date = row.css('td:nth-child(4) tr:nth-child(1) td').text
+    time = row.css('td:nth-child(4) tr:nth-child(2) td').text
+
+    begin
+      datetime = Time.strptime("#{date} #{time}", "%m/%d/%Y %l:%M %p")
+    rescue ArgumentError
+      raise ArgumentError.new("Invalid DateTime: '#{date} #{time}'")
+    end
+
     {
-      case_number: row.css('td:nth-child(1) tr:nth-child(1) td').text,
-      type: row.css('td:nth-child(1) tr:nth-child(2) td').text,
-      style: row.css('td:nth-child(2)').text,
-      judicial_officer: row.css('td:nth-child(3) tr:nth-child(1) td').text,
-      physical_location: row.css('td:nth-child(3) tr:nth-child(2) td').text,
-      date: row.css('td:nth-child(4) tr:nth-child(1) td').text,
-      time: row.css('td:nth-child(4) tr:nth-child(2) td').text,
-      hearing_type: row.css('td:nth-child(4) tr:nth-child(3) td').text,
+      case_number: row.css('td:nth-child(1) tr:nth-child(1) td').text.strip,
+      schedule_type: row.css('td:nth-child(1) tr:nth-child(2) td').text.strip,
+      style: row.css('td:nth-child(2)').text.strip,
+      judicial_officer: row.css('td:nth-child(3) tr:nth-child(1) td').text.strip,
+      physical_location: row.css('td:nth-child(3) tr:nth-child(2) td').text.strip,
+      datetime: datetime,
+      hearing_type: row.css('td:nth-child(4) tr:nth-child(3) td').text.strip,
     }
   end
 
