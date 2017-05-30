@@ -51,6 +51,12 @@ class ScheduleUpdater
   def handle_schedule_update(schedule, changes)
     $stderr.puts "Schedule updated: #{schedule.case_number}\t\t#{changes}"
 
+    ChangeLog.create(
+      case_number: schedule.case_number,
+      change_type: :changed,
+      change_contents: changes
+    )
+
     Subscription
       .where(case_number: schedule.case_number)
       .find_each do |subscription|
@@ -59,7 +65,13 @@ class ScheduleUpdater
   end
 
   def handle_schedule_removed(schedule)
-    $stderr.puts("Schedule destroyed: #{schedule.case_number}")
+    $stderr.puts("Schedule removed: #{schedule.case_number}")
+
+    ChangeLog.create(
+      case_number: schedule.case_number,
+      change_type: :removed,
+      change_contents: schedule
+    )
 
     Subscription
       .where(case_number: schedule.case_number)
@@ -70,6 +82,12 @@ class ScheduleUpdater
 
   def handle_schedule_create(schedule)
     $stderr.puts("Schedule created: #{schedule.case_number}")
+
+    ChangeLog.create(
+      case_number: schedule.case_number,
+      change_type: :created,
+      change_contents: schedule
+    )
 
     Subscription
       .where(case_number: schedule.case_number)
