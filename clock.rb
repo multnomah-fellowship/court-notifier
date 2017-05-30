@@ -21,7 +21,7 @@ module Clockwork
       ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
       ScheduleUpdater.new(today).update
     when 'remind'
-      range = ((Time.now + ONE_DAY)..(Time.nowe + ONE_DAY + ONE_HOUR))
+      range = ((Time.now + ONE_DAY)..(Time.now + ONE_DAY + ONE_HOUR))
       ScheduleReminder.new(range).remind
     end
   end
