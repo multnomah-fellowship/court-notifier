@@ -5,6 +5,14 @@ class TwilioClient
     @client = Twilio::REST::Client.new(sid, token)
   end
 
+  def send_reminder_message(phone, schedule)
+    @client.messages.create(
+      from: '+14152126085',
+      to: phone,
+      body: "Reminder! Case #{schedule.case_number} has a #{schedule.hearing_type} at #{schedule.datetime}."
+    )
+  end
+
   def send_updated_message(phone, schedule)
     changes = schedule.changes.map do |field, (before, after)|
       "#{field} changed #{before} -> #{after}"
