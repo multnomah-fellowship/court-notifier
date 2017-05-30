@@ -13,6 +13,8 @@ module Clockwork
   ONE_HOUR = 60 * 60
   ONE_DAY = 24 * 60 * 60
 
+  error_handler { |error| Raven.capture_exception(error) }
+
   handler do |job|
     $logger.info "Running #{job}"
 
@@ -21,6 +23,7 @@ module Clockwork
       ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
       ScheduleUpdater.new(today).update
     when 'remind'
+      ActiveRecord::Base.establish_connection(ENV['DATABASE_URL'])
       range = ((Time.now + ONE_DAY)..(Time.now + ONE_DAY + ONE_HOUR))
       ScheduleReminder.new(range).remind
     end
