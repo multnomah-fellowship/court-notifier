@@ -1,7 +1,12 @@
+:css
+  #subscription-list li {
+    margin-bottom: 30px;
+  }
+
 <form method="POST" action="/update"><input type="submit" value="Update Now!" /></form>
 
 %h2 Subscriptions
-%ul
+%ul#subscription-list
   - subscriptions.each do |subscription|
     %li
       %b= subscription.phone_number
@@ -9,6 +14,18 @@
       %b= subscription.case_number
       = surround '(', ')' do
         %a{ href: "/subscriptions/#{subscription.id}/delete" } Unsubscribe
+      %table
+        %thead
+          %tr
+            %th Hearing Type
+            %th Case Name
+            %th Date Time
+        %tbody
+          - subscription.schedules.sort_by(&:datetime).each do |schedule|
+            %tr
+              %td= schedule.hearing_type
+              %td= schedule.style
+              %td= schedule.datetime
 
 %form{ method: 'POST', action: '/subscriptions' }
   %div

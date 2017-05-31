@@ -11,7 +11,7 @@ after do
 end
 
 get '/' do
-  subscriptions = Subscription.all
+  subscriptions = Subscription.all.includes(:schedules)
   haml :index, locals: { subscriptions: subscriptions }
 end
 
