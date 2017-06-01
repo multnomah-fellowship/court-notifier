@@ -1,5 +1,5 @@
 class ScheduleUpdater
-  DAYS_TO_UPDATE = 7
+  DAYS_TO_UPDATE = 14
 
   def initialize(date)
     @date = date
