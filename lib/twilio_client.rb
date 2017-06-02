@@ -29,7 +29,7 @@ class TwilioClient
     @client.messages.create(
       from: '+14152126085',
       to: phone,
-      body: "Update for case #{new_schedule.case_number}: new event: #{new_schedule.attributes}"
+      body: "New event for case #{new_schedule.case_number}: #{new_schedule.attributes}"
     )
   end
 
@@ -37,7 +37,7 @@ class TwilioClient
     @client.messages.create(
       from: '+14152126085',
       to: phone,
-      body: "Update for case #{removed_schedule.case_number}: removed event: #{removed_schedule.attributes}"
+      body: "Removed event for case #{removed_schedule.case_number}: #{removed_schedule.attributes}"
     )
   end
 end
