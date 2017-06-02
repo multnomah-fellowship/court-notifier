@@ -44,10 +44,13 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     FactoryGirl.find_definitions
-    ActiveRecord::Base.configurations = {
-      url: 'postgresql://localhost/court-notifier-test'
-    }
-    ActiveRecord::Base.establish_connection
+
+    ActiveRecord::Base.establish_connection('postgresql://localhost/court-notifier-test')
+
+    # TODO: probably should load the schema instead?
+    if ActiveRecord::Migrator.needs_migration?
+      ActiveRecord::Migrator.migrate(ActiveRecord::Migrator.migrations_paths)
+    end
   end
 
   config.after do
