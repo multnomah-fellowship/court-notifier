@@ -1,23 +1,28 @@
 class ScheduleUpdater
   DAYS_TO_UPDATE = 14
 
-  def initialize(date)
+  def initialize(date, client: TwilioClient.new)
     @date = date
-    @client = TwilioClient.new
+    @client = client
+  end
+
+  def fetch_schedules
+    schedules = []
+    scraper = CourtScheduleScraper.new
+    (@date..(@date + DAYS_TO_UPDATE)).each do |date|
+      $stderr.write "Fetching schedules for #{date}..."
+      cases = scraper.cases_for(date).to_a
+      $stderr.puts " #{cases.length}"
+
+      schedules.concat(cases)
+    end
+    schedules
   end
 
   def update
     old_schedules =
       Schedule.on_or_after(@date).map(&:attributes).map(&:symbolize_keys)
-    new_schedules = []
-
-    (@date..(@date + DAYS_TO_UPDATE)).each do |date|
-      $stderr.write "Fetching schedules for #{date}..."
-      cases = CourtScheduleScraper.new.cases_for(date).to_a
-      $stderr.puts " #{cases.length}"
-
-      new_schedules.concat(cases)
-    end
+    new_schedules = fetch_schedules
 
     Schedule.transaction do
       Differ.new(old_schedules, new_schedules).each_change do |change_type, *change|
