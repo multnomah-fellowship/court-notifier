@@ -1,8 +1,10 @@
 require 'twilio-ruby'
 
 class TwilioClient
-  def initialize(sid = ENV['TWILIO_ACCOUNT_SID'], token = ENV['TWILIO_AUTH_TOKEN'])
-    @client = Twilio::REST::Client.new(sid, token)
+  def initialize(sid: ENV['TWILIO_ACCOUNT_SID'],
+                 token: ENV['TWILIO_AUTH_TOKEN'],
+                 client_class: Twilio::REST::Client)
+    @client = client_class.new(sid, token)
   end
 
   def send_reminder_message(phone, schedule)
