@@ -18,6 +18,6 @@ require_relative './lib/differ.rb'
 require_relative './lib/twilio_client.rb'
 
 # models:
-require_relative './lib/schedule.rb'
-require_relative './lib/subscription.rb'
-require_relative './lib/change_log.rb'
+require_relative './models/schedule.rb'
+require_relative './models/subscription.rb'
+require_relative './models/change_log.rb'
