@@ -14,7 +14,16 @@ RSpec.describe ScheduleUpdater do
   let(:client) { double() }
   let(:date) { Date.today }
 
-  subject { described_class.new(date, client: client) }
+  around do |example|
+    File.open('/dev/null', 'w') do |f|
+      @output = f
+      example.run
+    end
+  end
+
+  subject do
+    described_class.new(date, client: client, output: @output)
+  end
 
   describe '#fetch_schedules' do
     before do

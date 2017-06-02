@@ -1,18 +1,19 @@
 class ScheduleUpdater
   DAYS_TO_UPDATE = 14
 
-  def initialize(date, client: TwilioClient.new)
+  def initialize(date, client: TwilioClient.new, output: $stderr)
     @date = date
     @client = client
+    @output = output
   end
 
   def fetch_schedules
     schedules = []
     scraper = CourtScheduleScraper.new
     (@date..(@date + DAYS_TO_UPDATE)).each do |date|
-      $stderr.write "Fetching schedules for #{date}..."
+      @output.write "Fetching schedules for #{date}..."
       cases = scraper.cases_for(date).to_a
-      $stderr.puts " #{cases.length}"
+      @output.puts " #{cases.length}"
 
       schedules.concat(cases)
     end
@@ -54,7 +55,7 @@ class ScheduleUpdater
   private
 
   def handle_schedule_update(schedule, changes)
-    $stderr.puts "Schedule updated: #{schedule.case_number}\t\t#{changes}"
+    @output.puts "Schedule updated: #{schedule.case_number}\t\t#{changes}"
 
     ChangeLog.create(
       case_number: schedule.case_number,
@@ -70,7 +71,7 @@ class ScheduleUpdater
   end
 
   def handle_schedule_removed(schedule)
-    $stderr.puts("Schedule removed: #{schedule.case_number}")
+    @output.puts("Schedule removed: #{schedule.case_number}")
 
     ChangeLog.create(
       case_number: schedule.case_number,
@@ -86,7 +87,7 @@ class ScheduleUpdater
   end
 
   def handle_schedule_create(schedule)
-    $stderr.puts("Schedule created: #{schedule.case_number}")
+    @output.puts("Schedule created: #{schedule.case_number}")
 
     ChangeLog.create(
       case_number: schedule.case_number,
