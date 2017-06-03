@@ -4,7 +4,7 @@ FactoryGirl.define do
     schedule_type 'Offense Felony'
     style "State of Oregon\nvs.\nJohn Doe"
     judicial_officer 'Judge Foo Bar'
-    datetime { Time.strptime('2017-05-30 11:30', '%Y-%m-%d %H:%M') }
+    datetime { Time.strptime('2017-05-30 11:30 UTC', '%Y-%m-%d %H:%M %Z') }
     hearing_type 'Arraignment'
   end
 end

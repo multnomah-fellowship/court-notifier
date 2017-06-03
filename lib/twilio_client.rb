@@ -28,7 +28,7 @@ class TwilioClient
   end
 
   def send_created_message(phone, new_schedule)
-    datetime_string = '%-m/%-d/%y %-H:%I%P'
+    datetime_string = new_schedule.datetime.strftime('%-m/%-d/%y %-I:%M%P')
     style_string = new_schedule.style.gsub(/\n/, ' ')
     message_format =
       'New event for case %{case_number} (%{style}): %{hearing_type} at %{datetime}'

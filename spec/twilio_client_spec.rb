@@ -72,6 +72,16 @@ RSpec.describe TwilioClient do
 
       subject.send_created_message(phone_number, schedule)
     end
+
+    it 'templates the datetime properly' do
+      expect(messages_resource)
+        .to receive(:create)
+        .with(hash_including(
+          body: match(%r{5/30/17 11:30am}),
+        ))
+
+      subject.send_created_message(phone_number, schedule)
+    end
   end
 
   describe '#send_deleted_message' do
